@@ -23,7 +23,7 @@ else
 fi
 
 git add -A
-git commit -m "$tag: $messeage"
+git commit -m "$tag: $message"
 shift
 
 
