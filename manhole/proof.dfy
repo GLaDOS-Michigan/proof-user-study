@@ -24,6 +24,13 @@ lemma Inv_Next(s:State, s':State)
     assert s'.radius == s.radius == 3;
     assert s'.w.y >= -s'.w.x + 5;
     assert s'.w.x >= 0;
+
+    if s'.w.x == 3 {
+        assert s'.w.y >= 2;
+        assert Safety(s');
+
+    }
+
     assert Safety(s');
 }
 
