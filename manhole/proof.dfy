@@ -21,9 +21,10 @@ lemma Inv_Next(s:State, s':State)
     requires Next(s, s')
     ensures Inv(s')
 {
+    assert s'.radius == s.radius == 3;
     assert s'.w.y >= -s'.w.x + 5;
     assert s.w.x * s.w.x + s.w.y * s.w.y >= 3*3;
-    assert s'.w.x * s'.w.x + s'.w.y * s'.w.y >= 3*3;
+    assert s'.w.x * s'.w.x + s'.w.y * s'.w.y >= s'.radius*s'.radius
     assert Safety(s');
 }
 
