@@ -8,6 +8,7 @@ predicate Inv(s:State) {
     && Safety(s)
     && s.w.y >= -s.w.x + 5
     && s.radius == 3
+    && s.w.x * s.w.x + s.w.y * s.w.y >= s.radius*s.radius
 }
 
 lemma Inv_Init(s:State) 
