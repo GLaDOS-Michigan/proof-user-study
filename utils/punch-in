@@ -9,4 +9,4 @@ timecard=$1
 
 now=$(date +"%m/%d/%Y %T %Z")
 echo "Punching in at $now"
-echo "start,$now" >> $timecard
+echo "start,$now," >> $timecard
