@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# This script commits the repo with the provided tag, and then calls the dafny verifier
+# Usage ./verify-and-commit -tag=[ "other" | "protocol" | "proof" ] [ commit message ]
+
+
+### First, do a commit
+declare -a VALID_TAGS=("other" "protocol" "proof")
+
+commit_tag_opt=$1
+message=$2
+
+# Get the commit tag
+if [[ $commit_tag_opt == "-tag="* ]]; then
+    tag="${commit_tag_opt#*=}"
+    if [[ ! " ${VALID_TAGS[*]} " =~ " ${tag} " ]]; then
+        echo "Error: Invalid commit tag $tag"
+        exit 1
+    fi
+else 
+    echo "Error: Invalid option $commit_tag_opt"
+    exit 1
+fi
+
+git add -A
+git commit -m "$tag: $messeage"
+shift
+
+
+### Next, run Dafny
+
+if uname -a | grep -q Darwin; then
+
+    dafny="/usr/local/lib/dafny/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    dafnylong="/usr/local/lib/dafny/dafny /timeLimit:40 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+
+elif uname -a | grep -q Linux; then
+
+    dafny="/usr/lib/dafny3/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    dafnylong="/usr/lib/dafny3/dafny /timeLimit:40 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+
+else
+    echo "Error: Verification failed"
+    exit 1
+fi
+
+### Definition Files 
+$dafny $@
+
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+    echo "Error: Script requires timecard csv file as input"
+    exit 1
+fi
+
+timecard=$1
+
+now=$(date +"%m/%d/%Y %T %Z")
+echo "Punching out at $now"
+echo "end,$now" >> $timecard
