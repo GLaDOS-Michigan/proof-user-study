@@ -25,6 +25,7 @@ fi
 git add -A
 git commit -m "$tag: $message"
 shift
+shift
 
 
 ### Next, run Dafny
