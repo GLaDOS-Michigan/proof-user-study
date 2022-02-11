@@ -18,7 +18,10 @@ lemma Inv_Next(s:State, s':State)
     requires Inv(s)
     requires Next(s, s')
     ensures Inv(s')
-{}
+{
+    assert s'.w.y >= -s'.w.x + 5;
+    assert Safety(s');
+}
 
 
 }
