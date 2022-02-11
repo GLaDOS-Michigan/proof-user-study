@@ -6,6 +6,7 @@ import opened Manhole
 
 predicate Inv(s:State) {
     && Safety(s)
+    && s.w.y >= -s.w.x + 5
 }
 
 lemma Inv_Init(s:State) 
