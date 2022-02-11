@@ -20,7 +20,8 @@ lemma Inv_Next(s:State, s':State)
     ensures Inv(s')
 {
     assert s'.w.y >= -s'.w.x + 5;
-    assert s'.w.x*s'.w.x + s'.w.y*s'.w.y >= 3*3;
+    assert s.w.x * s.w.x + s'.w.y * s.w.y >= 3*3;
+    assert s'.w.x * s'.w.x + s'.w.y * s'.w.y >= 3*3;
     assert Safety(s');
 }
 
