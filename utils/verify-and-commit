@@ -37,7 +37,8 @@ if uname -a | grep -q Darwin; then
 
 elif uname -a | grep -q Linux; then
 
-    dafny="/usr/lib/dafny3/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    # dafny="/usr/lib/dafny3/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    dafny="/usr/lib/dafny3/dafny /timeLimit:20 /compile:0  /allowGlobals /autoTriggers:1 /vcsCores:4"
     dafnylong="/usr/lib/dafny3/dafny /timeLimit:40 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
 
 else
