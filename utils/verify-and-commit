@@ -31,7 +31,8 @@ shift
 
 if uname -a | grep -q Darwin; then
 
-    dafny="/usr/local/lib/dafny/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    # dafny="/usr/local/lib/dafny/dafny /timeLimit:20 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
+    dafny="/usr/local/lib/dafny/dafny /timeLimit:20 /compile:0  /allowGlobals /autoTriggers:1 /vcsCores:4"
     dafnylong="/usr/local/lib/dafny/dafny /timeLimit:40 /compile:0  /allowGlobals /noNLarith /autoTriggers:1 /vcsCores:4"
 
 elif uname -a | grep -q Linux; then
