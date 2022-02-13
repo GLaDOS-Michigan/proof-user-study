@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script commits the repo with the provided tag, and then calls the dafny verifier
-# Usage ./verify-and-commit -tag=[ "other" | "protocol" | "proof" ] [ commit message ]
+# Usage ./verify-and-commit -tag=[ "other" | "protocol" | "proof" ] [ commit message ] [files]
 
 
 ### First, do a commit
