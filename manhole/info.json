@@ -1,0 +1,11 @@
+{
+    "project_path" : "/home/nudzhang/Documents/proof-user-study/manhole",
+    "timecard_path" : "/home/nudzhang/Documents/proof-user-study/manhole/timecard.csv",
+    "repo_path" : "/home/nudzhang/Documents/proof-user-study/",
+    "protocol_files" : [
+        "manhole.dfy"
+    ],
+    "proof_files" : [
+        "proof.dfy"
+    ]
+}
