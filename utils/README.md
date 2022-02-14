@@ -10,7 +10,7 @@ Each project should contain a json file that includes the following:
     "repo_path" : path to git repo,
     "project_rel_path" : project path relative to repo_path,
     "timecard_path" : path to timecard,
-    "protocol_files" : list of protocol files,
-    "proof_files" : list of proof files
+    "protocol_files" : list of protocol files relative to repo_path,
+    "proof_files" : list of proof files relative to repo_path
 }
 ```
