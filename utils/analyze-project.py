@@ -44,7 +44,7 @@ class Project_Metadata(object):
     
    
     def parse_timecard_info(info):
-         """ Returns a list of (start, end) tuples, sorted by start """
+        """ Returns a list of (start, end) tuples, sorted by start """
         res = []
         with open(info['timecard_path']) as f:
             csvreader = csv.reader(f, delimiter=',')
@@ -71,15 +71,19 @@ class Project_Metadata(object):
 def main(project_json):
     meta = Project_Metadata.parse_from_json(project_json)
     git_commits = get_git_commits(meta)     # list of (timestamp, commit) objects
-    # sanity_check(meta, git_commits)
-    
-    # scaled_commits contains all the data I need to draw
+    sanity_check(meta, git_commits)
     scaled_commits = scale_by_timecard(meta.timecard, git_commits)
     visualize_data(meta, scaled_commits)
     
 
-# """ Asserts that all modifications to protocol and proof files are done while punched-in"""
-# def sanity_check(meta, git_commits):
+""" Asserts that all modifications to protocol and proof files are done while punched-in"""
+def sanity_check(meta, git_commits):
+    protocol_files =  meta.files_info['protocol']
+    proof_files =  meta.files_info['proof']
+    
+    
+    for t, c in git_commits:
+        stats = c.stats.files
     
     
     
@@ -102,8 +106,9 @@ def scale_by_timecard(timecard, timestamped_list):
         where timedelta is datetime.timedelta since genesis time, using Tony's proprietary 
         scaling algorithm
     """
+    s = 0
     timestamped_list = scale_by_timecard_trim(timecard, timestamped_list)
-    segment = timecard.pop(0)
+    segment = timecard[s]
     genesis = segment[0]        # the dawn of time
     (start, end) = segment      # start and end of this segment
     cumulative_downtime = datetime.timedelta()     # the zero interval
@@ -121,7 +126,8 @@ def scale_by_timecard(timecard, timestamped_list):
             if len(timecard) == 0:
                 break
             old_end = end
-            new_segment = timecard.pop(0)
+            s += 1
+            new_segment = timecard[s]
             (start, end) = new_segment
             cumulative_downtime += (new_segment[0]-old_end)
     return res
