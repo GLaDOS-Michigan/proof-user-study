@@ -139,7 +139,6 @@ def visualize_data(meta, scaled_commits):
     
     # Get SLOC counts
     protocol_sloc_vals, proof_sloc_vals = extract_sloc(meta, commits)
-    print(proof_sloc_vals)
     
     # Get diff stats, as list of (insertions, deletions, lines) tuples
     protocol_stats, proof_stats = extract_diff_stats(meta, commits)
@@ -161,14 +160,14 @@ def visualize_data(meta, scaled_commits):
         ax.grid()
               
         # Plot proof insertions and deletions
-        ax.bar(time_vals_minutes, proof_dels, 0.6, label='proof deletions', color='red')
-        ax.bar(time_vals_minutes, proof_inser, 0.6, bottom=proof_dels, label='proof insertions', color='green')
-        ax.bar(time_vals_minutes, protocol_dels, 0.5, label='protocol deletions', color='orange')
-        ax.bar(time_vals_minutes, protocol_inser, 0.5, bottom=proof_dels, label='protocol insertions', color='lime')
+        ax.bar(time_vals_minutes, proof_dels, 0.7, label='proof deletions', color='darkred')
+        ax.bar(time_vals_minutes, proof_inser, 0.7, bottom=proof_dels, label='proof insertions', color='limegreen')
+        ax.bar(time_vals_minutes, protocol_dels, 0.7, label='protocol deletions', color='orange')
+        ax.bar(time_vals_minutes, protocol_inser, 0.7, bottom=proof_dels, label='protocol insertions', color='turquoise')
         
         # Plot sloc values
-        ax.scatter(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy')
-        ax.scatter(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick')
+        ax.plot(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy', linestyle='dashed', marker='o')
+        ax.plot(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick', linestyle='dashed', marker='o')
 
         plt.legend()
         plt.close(fig)
@@ -212,9 +211,9 @@ def extract_diff_stats(meta, commits):
         proto_inser, proto_del, proto_mod = 0, 0, 0
         
         stats = c.stats.files
-        print(c.name_rev)
-        print(stats)
-        print()
+        # print(c.name_rev)
+        # print(stats)
+        # print()
         
         for f in meta.files_info['protocol']:
             if f in stats:
