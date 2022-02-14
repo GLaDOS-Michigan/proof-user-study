@@ -34,15 +34,17 @@ class Project_Metadata(object):
         assert not meta.repo.bare     
         return meta
     
-    """ Returns a map of categories to list of filenames """
+    
     def parse_files_info(info):
+        """ Returns a map of categories to list of filenames """
         res = dict()
         res['protocol'] = info['protocol_files']
         res['proof'] = info['proof_files']
         return res
     
-    """ Returns a list of (start, end) tuples, sorted by start """
+   
     def parse_timecard_info(info):
+         """ Returns a list of (start, end) tuples, sorted by start """
         res = []
         with open(info['timecard_path']) as f:
             csvreader = csv.reader(f, delimiter=',')
@@ -81,8 +83,9 @@ def main(project_json):
     
     
     
-""" Returns a list of (timestamp, commit) tuples, sorted by timestamp """
+
 def get_git_commits(meta):
+    """ Returns a list of (timestamp, commit) tuples, sorted by timestamp """
     commits = list(meta.repo.iter_commits(paths=meta.project_path))
     
     # Timestamp each commit and sort
@@ -93,11 +96,12 @@ def get_git_commits(meta):
     return timestamped_commits
 
 
-""" Converts sorted timestamp list of (timestamp, X) into a list of (timedelta, X) list,
-    where timedelta is datetime.timedelta since genesis time, using Tony's proprietary 
-    scaling algorithm
-"""
+
 def scale_by_timecard(timecard, timestamped_list):
+    """ Converts sorted timestamp list of (timestamp, X) into a list of (timedelta, X) list,
+        where timedelta is datetime.timedelta since genesis time, using Tony's proprietary 
+        scaling algorithm
+    """
     timestamped_list = scale_by_timecard_trim(timecard, timestamped_list)
     segment = timecard.pop(0)
     genesis = segment[0]        # the dawn of time
@@ -135,11 +139,11 @@ def scale_by_timecard_trim(timecard, timestamped_list):
     return res
         
             
-"""
+def visualize_data(meta, scaled_commits):    
+    """
     meta: Project_Metadata object
     scaled_commits: list of (timedelta, commit_object) tuples
-"""
-def visualize_data(meta, scaled_commits):    
+    """
     time_vals_minutes = [t[0].total_seconds()/60 for t in scaled_commits]
     commits = [t[1] for t in scaled_commits]
     sha_labels = [c.name_rev[:6] for c in commits]  # label with commit sha
@@ -186,10 +190,9 @@ def visualize_data(meta, scaled_commits):
         
     
     
-    
-""" Returns two lists, first contains the sloc of protocol code,
-    and second contains the sloc of proof code.  """
 def extract_sloc(meta, commits):
+    """ Returns two lists, first contains the sloc of protocol code,
+        and second contains the sloc of proof code.  """
     def count_lines(sha, f):
         git_show_arg = "%s:%s" %(sha, f)
         try: 
@@ -213,9 +216,9 @@ def extract_sloc(meta, commits):
     return protocol_res, proof_res  
 
 
-""" Returns two lists, first contains the (insertions, deletions, lines) of protocol code,
-    and second contains that of proof code.  """
 def extract_diff_stats(meta, commits):    
+    """ Returns two lists, first contains the (insertions, deletions, lines) of protocol code,
+        and second contains that of proof code.  """
     protocol_stats, proof_stats = [], []
     for c in commits:
         proof_inser, proof_del, proof_mod = 0, 0, 0
@@ -238,8 +241,8 @@ def extract_diff_stats(meta, commits):
     
 
 
-""" Given the string representation of a program, return the SLOC """
 def count_sloc(program_str):
+    """ Given the string representation of a program, return the SLOC """
     lines = program_str.split('\n')
     lines = [l.strip() for l in lines if len(l.strip()) > 0]
     physical_lines = []
