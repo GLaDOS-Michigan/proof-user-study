@@ -190,20 +190,20 @@ def visualize_data(meta, scaled_commits):
         ax.grid()
               
         # Plot proof insertions and deletions
-        ax.bar(time_vals_minutes, proof_dels, 0.7, label='proof deletions', color='darkred')
-        ax.bar(time_vals_minutes, proof_inser, 0.7, bottom=proof_dels, label='proof insertions', color='limegreen')
-        ax.bar(time_vals_minutes, protocol_dels, 0.7, label='protocol deletions', color='orange')
-        ax.bar(time_vals_minutes, protocol_inser, 0.7, bottom=proof_dels, label='protocol insertions', color='turquoise')
+        ax.bar(time_vals_minutes, proof_dels, 0.6, label='proof deletions', color='darkred')
+        ax.bar(time_vals_minutes, proof_inser, 0.6, bottom=proof_dels, label='proof insertions', color='limegreen')
+        ax.bar(time_vals_minutes, protocol_dels, 1, label='protocol deletions', color='orange')
+        ax.bar(time_vals_minutes, protocol_inser, 1, bottom=proof_dels, label='protocol insertions', color='turquoise')
         
         # Plot sloc values
         ax.plot(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy', linestyle='dashed', marker='o')
-        ax.plot(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick', linestyle='dashed', marker='o')
+        ax.plot(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick', linestyle='dashed', marker='v')
 
         # Add labels
         for i, sha in enumerate(sha_labels):
             ax.annotate(sha, (time_vals_minutes[i]-0.5, protocol_sloc_vals[i]+2), rotation='vertical')
         
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.close(fig)
         pp.savefig(fig)
         
