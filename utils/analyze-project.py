@@ -76,16 +76,29 @@ def main(project_json):
     visualize_data(meta, scaled_commits)
     
 
-""" Asserts that all modifications to protocol and proof files are done while punched-in"""
 def sanity_check(meta, git_commits):
-    protocol_files =  meta.files_info['protocol']
-    proof_files =  meta.files_info['proof']
+    """ Asserts that all modifications to protocol and proof files are done while punched-in"""
+    def in_segment(segment, ts):
+        (start, end) = segment
+        return start <= ts and ts <= end
     
-    
-    for t, c in git_commits:
+    def in_some_segment(segment_lst, ts):
+        for seg in segment_lst:
+            if in_segment(seg, ts):
+                return True
+        return False
+    protocol_files = set(meta.files_info['protocol'])
+    proof_files = set(meta.files_info['proof'])
+    segments = meta.timecard
+
+    for (t, c) in git_commits:
         stats = c.stats.files
-    
-    
+        for f in stats:
+            if f in protocol_files or f in proof_files:
+                if not in_some_segment(segments, t.replace(tzinfo=None)):
+                    sha = c.name_rev[:6]
+                    raise AssertionError("commit %s modified %s during downtime at %s" %(sha, f, t))
+                break    
     
 
 def get_git_commits(meta):
