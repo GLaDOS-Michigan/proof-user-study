@@ -29,20 +29,56 @@ class Project_Metadata(object):
         meta.repo_path = info['repo_path']
         meta.repo = Repo(meta.repo_path)
         meta.project_path = info['project_rel_path']
-        meta.timecard = parse_timecard_info(info)       
-        meta.files_info = parse_files_info(info)      
+        meta.timecard = Project_Metadata.parse_timecard_info(info)       
+        meta.files_info = Project_Metadata.parse_files_info(info)      
         assert not meta.repo.bare     
         return meta
+    
+    """ Returns a map of categories to list of filenames """
+    def parse_files_info(info):
+        res = dict()
+        res['protocol'] = info['protocol_files']
+        res['proof'] = info['proof_files']
+        return res
+    
+    """ Returns a list of (start, end) tuples, sorted by start """
+    def parse_timecard_info(info):
+        res = []
+        with open(info['timecard_path']) as f:
+            csvreader = csv.reader(f, delimiter=',')
+            next(csvreader)
+            started = False
+            entry_start = None
+            for row in csvreader:
+                kind, timestamp = row[0], datetime.datetime.strptime(row[1], '%m/%d/%Y %H:%M:%S %Z')
+                if not started:
+                    assert kind == 'start' and entry_start is None
+                    started = True
+                    entry_start = timestamp
+                else:
+                    assert kind == 'end' and entry_start is not None
+                    res.append((entry_start, timestamp))
+                    started = False
+                    entry_start = None
+            assert not started
+        res.sort(key=lambda x: x[0])
+        return res 
         
 
 
 def main(project_json):
     meta = Project_Metadata.parse_from_json(project_json)
     git_commits = get_git_commits(meta)     # list of (timestamp, commit) objects
+    # sanity_check(meta, git_commits)
     
     # scaled_commits contains all the data I need to draw
     scaled_commits = scale_by_timecard(meta.timecard, git_commits)
     visualize_data(meta, scaled_commits)
+    
+
+# """ Asserts that all modifications to protocol and proof files are done while punched-in"""
+# def sanity_check(meta, git_commits):
+    
     
     
 """ Returns a list of (timestamp, commit) tuples, sorted by timestamp """
@@ -55,38 +91,6 @@ def get_git_commits(meta):
         timestamped_commits.append((c.committed_datetime, c))
     timestamped_commits.sort(key=lambda x: x[0])
     return timestamped_commits
-        
-    
-""" Returns a map of categories to list of filenames """
-def parse_files_info(info):
-    res = dict()
-    res['protocol'] = info['protocol_files']
-    res['proof'] = info['proof_files']
-    return res
-
-
-""" Returns a list of (start, end) tuples, sorted by start """
-def parse_timecard_info(info):
-    res = []
-    with open(info['timecard_path']) as f:
-        csvreader = csv.reader(f, delimiter=',')
-        next(csvreader)
-        started = False
-        entry_start = None
-        for row in csvreader:
-            kind, timestamp = row[0], datetime.datetime.strptime(row[1], '%m/%d/%Y %H:%M:%S %Z')
-            if not started:
-                assert kind == 'start' and entry_start is None
-                started = True
-                entry_start = timestamp
-            else:
-                assert kind == 'end' and entry_start is not None
-                res.append((entry_start, timestamp))
-                started = False
-                entry_start = None
-        assert not started
-    res.sort(key=lambda x: x[0])
-    return res 
 
 
 """ Converts sorted timestamp list of (timestamp, X) into a list of (timedelta, X) list,
@@ -97,22 +101,24 @@ def scale_by_timecard(timecard, timestamped_list):
     timestamped_list = scale_by_timecard_trim(timecard, timestamped_list)
     segment = timecard.pop(0)
     genesis = segment[0]        # the dawn of time
-    next_end = segment[1]
+    (start, end) = segment      # start and end of this segment
     cumulative_downtime = datetime.timedelta()     # the zero interval
     res = []
     for i in range(len(timestamped_list)):
         item = timestamped_list[i]
         t = item[0].replace(tzinfo=None)
-        if t <= next_end:
+        if t < start:
+            continue
+        elif t <= end:
             scaled_time = (t-genesis) - cumulative_downtime
             res.append((scaled_time, item[1]))
             i += 1
         else:
             if len(timecard) == 0:
                 break
-            old_end = next_end
+            old_end = end
             new_segment = timecard.pop(0)
-            next_end = new_segment[1]
+            (start, end) = new_segment
             cumulative_downtime += (new_segment[0]-old_end)
     return res
 
@@ -136,6 +142,7 @@ def scale_by_timecard_trim(timecard, timestamped_list):
 def visualize_data(meta, scaled_commits):    
     time_vals_minutes = [t[0].total_seconds()/60 for t in scaled_commits]
     commits = [t[1] for t in scaled_commits]
+    sha_labels = [c.name_rev[:6] for c in commits]  # label with commit sha
     
     # Get SLOC counts
     protocol_sloc_vals, proof_sloc_vals = extract_sloc(meta, commits)
@@ -169,6 +176,10 @@ def visualize_data(meta, scaled_commits):
         ax.plot(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy', linestyle='dashed', marker='o')
         ax.plot(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick', linestyle='dashed', marker='o')
 
+        # Add labels
+        for i, sha in enumerate(sha_labels):
+            ax.annotate(sha, (time_vals_minutes[i]-0.5, protocol_sloc_vals[i]+2), rotation='vertical')
+        
         plt.legend()
         plt.close(fig)
         pp.savefig(fig)
@@ -208,12 +219,8 @@ def extract_diff_stats(meta, commits):
     protocol_stats, proof_stats = [], []
     for c in commits:
         proof_inser, proof_del, proof_mod = 0, 0, 0
-        proto_inser, proto_del, proto_mod = 0, 0, 0
-        
+        proto_inser, proto_del, proto_mod = 0, 0, 0        
         stats = c.stats.files
-        # print(c.name_rev)
-        # print(stats)
-        # print()
         
         for f in meta.files_info['protocol']:
             if f in stats:
