@@ -1,7 +1,7 @@
 {
-    "project_path" : "/home/nudzhang/Documents/proof-user-study/manhole",
-    "timecard_path" : "/home/nudzhang/Documents/proof-user-study/manhole/timecard.csv",
     "repo_path" : "/home/nudzhang/Documents/proof-user-study/",
+    "project_rel_path" : "manhole",
+    "timecard_path" : "/home/nudzhang/Documents/proof-user-study/manhole/timecard.csv",
     "protocol_files" : [
         "manhole.dfy"
     ],

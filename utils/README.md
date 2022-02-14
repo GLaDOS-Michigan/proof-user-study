@@ -7,9 +7,9 @@ Each project should contain a json file that includes the following:
 
 ```json
 {
-    "project_path" : project root dir,
-    "timecard_path" : path to timecard,
     "repo_path" : path to git repo,
+    "project_rel_path" : project path relative to repo_path,
+    "timecard_path" : path to timecard,
     "protocol_files" : list of protocol files,
     "proof_files" : list of proof files
 }
