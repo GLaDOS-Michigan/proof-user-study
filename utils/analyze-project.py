@@ -165,7 +165,8 @@ def extract_sloc(meta, commits):
         git_show_arg = "%s:%s/%s" %(sha, meta.project_path, f)
         try: 
             file_snapshot = git.show(git_show_arg)
-            return file_snapshot.count('\n')  # TODO: this includes empty lines. Should count SLOC properly
+            return count_sloc(file_snapshot)  # does not count whitespace
+            # return file_snapshot.count('\n')  # count whitespace
         except:
             return 0
     git = meta.repo.git
@@ -181,6 +182,35 @@ def extract_sloc(meta, commits):
         protocol_res.append(protocol_lines)
         proof_res.append(proof_lines)
     return protocol_res, proof_res  
+
+
+""" Given the string representation of a program, return the SLOC """
+def count_sloc(program_str):
+    lines = program_str.split('\n')
+    lines = [l.strip() for l in lines if len(l.strip()) > 0]
+    physical_lines = []
+
+    physical_mode = True
+    for l in lines:
+        # Strip comment lines
+        if physical_mode:
+            if "/*" in l:
+                if "*/" not in l:   
+                    # Begin multi-line comment
+                    physical_mode = False
+                else:
+                    continue
+            elif len(l) >= 2 and l[:2] == "//":
+                continue
+            else:
+                physical_lines.append(l)
+        else:
+            if "*/" in l:
+                # End multi-line comment
+                physical_mode = True    
+    # for l in physical_lines:
+    #     print(l)
+    return len(physical_lines)
     
     
 if __name__ == "__main__":
