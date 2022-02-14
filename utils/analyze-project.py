@@ -135,21 +135,40 @@ def scale_by_timecard_trim(timecard, timestamped_list):
 """
 def visualize_data(meta, scaled_commits):    
     time_vals_minutes = [t[0].total_seconds()/60 for t in scaled_commits]
-    
     commits = [t[1] for t in scaled_commits]
+    
+    # Get SLOC counts
     protocol_sloc_vals, proof_sloc_vals = extract_sloc(meta, commits)
+    print(proof_sloc_vals)
+    
+    # Get diff stats, as list of (insertions, deletions, lines) tuples
+    protocol_stats, proof_stats = extract_diff_stats(meta, commits)
+        
+    # Compute insertions and deletions
+    protocol_inser = [t[0] for t in protocol_stats]
+    protocol_dels = [t[1] for t in protocol_stats]
+    proof_inser = [t[0] for t in proof_stats]
+    proof_dels = [t[1] for t in proof_stats]
+    
+    # Draw graph
     with PdfPages("graph.pdf") as pp:
         fig, ax = plt.subplots(1, 1, figsize=(8.5, 6), sharex=True)
-        fig.suptitle("Lines of Code", fontsize=12, fontweight='bold')
-        ax.grid()
-        ax.plot(time_vals_minutes, protocol_sloc_vals, label='protocol', color='navy')
-        ax.plot(time_vals_minutes, proof_sloc_vals, label='proof', color='firebrick')
-        ax.set_xlabel('time (minutes)')
-        ax.set_ylabel('sloc')
-        
-        
         fig.tight_layout()
-        fig.subplots_adjust(top=0.9,bottom=0.1)
+        fig.subplots_adjust(left=0.08, top=0.9,bottom=0.1)
+        fig.suptitle("Lines of Code", fontsize=12, fontweight='bold')
+        ax.set_xlabel('time (minutes)')
+        ax.set_ylabel('lines of code')
+        ax.grid()
+              
+        # Plot proof insertions and deletions
+        ax.bar(time_vals_minutes, proof_dels, 0.6, label='proof deletions', color='red')
+        ax.bar(time_vals_minutes, proof_inser, 0.6, bottom=proof_dels, label='proof insertions', color='green')
+        ax.bar(time_vals_minutes, protocol_dels, 0.5, label='protocol deletions', color='orange')
+        ax.bar(time_vals_minutes, protocol_inser, 0.5, bottom=proof_dels, label='protocol insertions', color='lime')
+        
+        # Plot sloc values
+        ax.scatter(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy')
+        ax.scatter(time_vals_minutes, proof_sloc_vals, label='proof sloc', color='firebrick')
 
         plt.legend()
         plt.close(fig)
@@ -162,7 +181,7 @@ def visualize_data(meta, scaled_commits):
     and second contains the sloc of proof code.  """
 def extract_sloc(meta, commits):
     def count_lines(sha, f):
-        git_show_arg = "%s:%s/%s" %(sha, meta.project_path, f)
+        git_show_arg = "%s:%s" %(sha, f)
         try: 
             file_snapshot = git.show(git_show_arg)
             return count_sloc(file_snapshot)  # does not count whitespace
@@ -182,6 +201,35 @@ def extract_sloc(meta, commits):
         protocol_res.append(protocol_lines)
         proof_res.append(proof_lines)
     return protocol_res, proof_res  
+
+
+""" Returns two lists, first contains the (insertions, deletions, lines) of protocol code,
+    and second contains that of proof code.  """
+def extract_diff_stats(meta, commits):    
+    protocol_stats, proof_stats = [], []
+    for c in commits:
+        proof_inser, proof_del, proof_mod = 0, 0, 0
+        proto_inser, proto_del, proto_mod = 0, 0, 0
+        
+        stats = c.stats.files
+        print(c.name_rev)
+        print(stats)
+        print()
+        
+        for f in meta.files_info['protocol']:
+            if f in stats:
+                proto_inser += stats[f]['insertions']
+                proto_del += stats[f]['deletions']
+                proto_mod += stats[f]['lines']
+        for f in meta.files_info['proof']:
+            if f in stats:
+                proof_inser += stats[f]['insertions']
+                proof_del += stats[f]['deletions']
+                proof_mod += stats[f]['lines']
+        protocol_stats.append((proto_inser, proto_del, proto_mod))
+        proof_stats.append((proof_inser, proof_del, proof_mod))
+    return protocol_stats, proof_stats
+    
 
 
 """ Given the string representation of a program, return the SLOC """
