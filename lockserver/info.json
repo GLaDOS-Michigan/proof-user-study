@@ -1,0 +1,11 @@
+{
+    "repo_path" : "/home/nudzhang/Documents/proof-user-study/",
+    "project_rel_path" : "lockserver",
+    "timecard_path" : "/home/nudzhang/Documents/proof-user-study/lockserver/timecard.csv",
+    "protocol_files" : [
+        "lockserver/lockserver.dfy"
+    ],
+    "proof_files" : [
+        "lockserver/proof.dfy"
+    ]
+}
