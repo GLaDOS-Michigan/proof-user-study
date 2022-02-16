@@ -167,12 +167,9 @@ def visualize_data(meta, scaled_commits):
     commits = [t[1] for t in scaled_commits]
     sha_labels = [c.name_rev[:6] for c in commits]  # label with commit sha
     
-    # Get SLOC counts
-    protocol_sloc_vals, proof_sloc_vals = extract_sloc(meta, commits)
-    
-    # Get diff stats, as list of (insertions, deletions, lines) tuples
-    protocol_stats, proof_stats = extract_diff_stats(meta, commits)
-        
+    # Get data
+    protocol_sloc_vals, proof_sloc_vals, protocol_stats, proof_stats = extract_info(meta, commits)
+            
     # Compute insertions and deletions
     protocol_inser = [t[0] for t in protocol_stats]
     protocol_dels = [t[1] for t in protocol_stats]
@@ -207,12 +204,13 @@ def visualize_data(meta, scaled_commits):
         plt.close(fig)
         pp.savefig(fig)
         
-    
-    
-def extract_sloc(meta, commits):
-    """ Returns two lists, first contains the sloc of protocol code,
-        and second contains the sloc of proof code.  """
+
+
+def extract_sloc(meta, c):
+    """ Returns a pair, first is the sloc of protocol code in commit c,
+        and second is the sloc of proof code in commit c  """
     def count_lines(sha, f):
+        git = meta.repo.git
         git_show_arg = "%s:%s" %(sha, f)
         try: 
             file_snapshot = git.show(git_show_arg)
@@ -220,44 +218,54 @@ def extract_sloc(meta, commits):
             # return file_snapshot.count('\n')  # count whitespace
         except:
             return 0
-    git = meta.repo.git
-    protocol_res, proof_res = [], []
-    for c in commits:
-        protocol_lines = 0
-        proof_lines = 0
-        commit_sha = c.name_rev.split(' ')[0]
-        for f in meta.files_info['protocol']:
-            protocol_lines += count_lines(commit_sha, f)
-        for f in meta.files_info['proof']:
-            proof_lines += count_lines(commit_sha, f)
-        protocol_res.append(protocol_lines)
-        proof_res.append(proof_lines)
-    return protocol_res, proof_res  
+    protocol_lines = 0
+    proof_lines = 0
+    commit_sha = c.name_rev.split(' ')[0]
+    for f in meta.files_info['protocol']:
+        protocol_lines += count_lines(commit_sha, f)
+    for f in meta.files_info['proof']:
+        proof_lines += count_lines(commit_sha, f)
+    return protocol_lines, proof_lines
 
 
-def extract_diff_stats(meta, commits):    
-    """ Returns two lists, first contains the (insertions, deletions, lines) of protocol code,
-        and second contains that of proof code.  """
-    protocol_stats, proof_stats = [], []
+def extract_diff_stats(meta, c):    
+    """ Returns a pair of tuples, first is the (insertions, deletions, lines) of protocol code,
+        and second is that of proof code.  """
+    proto_inser, proto_del, proto_mod = 0, 0, 0        
+    proof_inser, proof_del, proof_mod = 0, 0, 0
+    stats = c.stats.files
+    for f in meta.files_info['protocol']:
+        if f in stats:
+            proto_inser += stats[f]['insertions']
+            proto_del += stats[f]['deletions']
+            proto_mod += stats[f]['lines']
+    for f in meta.files_info['proof']:
+        if f in stats:
+            proof_inser += stats[f]['insertions']
+            proof_del += stats[f]['deletions']
+            proof_mod += stats[f]['lines']
+    return (proto_inser, proto_del, proto_mod), (proof_inser, proof_del, proof_mod)
+
+
+
+def extract_info(meta, commits):
+    protocol_sloc_lst, proof_sloc_lst = [], []
+    protocol_stats_lst, proof_stats_lst = [], []
     for c in commits:
-        proof_inser, proof_del, proof_mod = 0, 0, 0
-        proto_inser, proto_del, proto_mod = 0, 0, 0        
-        stats = c.stats.files
+        protocol_lines, proof_lines = extract_sloc(meta, c)
+        proto_diff, proof_diff = extract_diff_stats(meta, c)
+        protocol_sloc_lst.append(protocol_lines)
+        proof_sloc_lst.append(proof_lines)
+        protocol_stats_lst.append(proto_diff)
+        proof_stats_lst.append(proof_diff)
         
-        for f in meta.files_info['protocol']:
-            if f in stats:
-                proto_inser += stats[f]['insertions']
-                proto_del += stats[f]['deletions']
-                proto_mod += stats[f]['lines']
-        for f in meta.files_info['proof']:
-            if f in stats:
-                proof_inser += stats[f]['insertions']
-                proof_del += stats[f]['deletions']
-                proof_mod += stats[f]['lines']
-        protocol_stats.append((proto_inser, proto_del, proto_mod))
-        proof_stats.append((proof_inser, proof_del, proof_mod))
-    return protocol_stats, proof_stats
-    
+        # Print some info
+        print("Commit %s:\t%s" %(c.name_rev[:6], c.committed_datetime))
+        print("protocol sloc:\t%d" %protocol_lines)
+        print("proof sloc:\t\t%d" %proof_lines)
+        print("proof diff:\t\t(%d, %d, %d)" %(proof_diff[0], proof_diff[1], proof_diff[2]))
+        print()
+    return protocol_sloc_lst, proof_sloc_lst, protocol_stats_lst, proof_stats_lst   
 
 
 def count_sloc(program_str):
