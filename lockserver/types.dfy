@@ -1,6 +1,6 @@
 module Types {
 
-datatype agent = Server | Client
+datatype agent = S | C
 datatype Id = Id(agt:agent, idx:nat)
 type Epoch = nat
 

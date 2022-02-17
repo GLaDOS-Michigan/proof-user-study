@@ -1,13 +1,15 @@
 include "types.dfy"
 include "network.dfy"
+include "generic_definitions.dfy"
 
-module Client {
+module Client_Agent {
 import opened Types
 import opened Network
+import opened Generic_Defs
 
 datatype ClientState = Idle | Pending | Working(sid:Id)  // sid is the id of the server I am using
 
-datatype ClientConts = CC(id:Id, servers:set<Id>)
+datatype ClientConts = CC(id:Id, servers:seq<Id>)
 
 datatype Client = Client(
     consts:ClientConts,                  
@@ -16,7 +18,7 @@ datatype Client = Client(
 )
 
 /* Client initial state */
-predicate ClientInit(c:Client, my_id:Id, servers:set<Id>) {
+predicate ClientInit(c:Client, my_id:Id, servers:seq<Id>) {
     && c.consts == CC(my_id, servers)
     && c.state == Idle
     && c.epoch == 0
@@ -38,6 +40,7 @@ predicate ClientSendRequest(c:Client, c':Client, recvIo:IoOpt, sendIo:IoOpt)
 {
     && recvIo.None?
     && if |c.consts.servers| > 0 then
+        lemma_NonEmptySeqContainsSomeElement(c.consts.servers);
         var dst :| dst in c.consts.servers;
         && c'.state == Pending
         && c'.epoch == c.epoch + 1

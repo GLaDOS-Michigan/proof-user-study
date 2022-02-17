@@ -1,7 +1,7 @@
 include "types.dfy"
 include "network.dfy"
 
-module Server {
+module Server_Agent {
 import opened Types
 import opened Network
 
