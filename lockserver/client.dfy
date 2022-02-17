@@ -29,7 +29,9 @@ predicate ClientNext(c:Client, c':Client, recvIo:IoOpt, sendIo:IoOpt) {
     && c'.consts == c.consts
     && match c.state {
         case Idle => ClientSendRequest(c, c', recvIo, sendIo)
-        case Pending => recvIo.None? && ClientStutter(c, c', sendIo)
+        case Pending => ClientPending(c, c', recvIo, sendIo)
+        //Bug 1: Pending case had the following 
+        // case Pending => recvIo.None? && ClientStutter(c, c', sendIo)
         case Working(sid) => ClientRelease(c, c', recvIo, sendIo)
     }
 }
@@ -55,13 +57,13 @@ predicate ClientPending(c:Client, c':Client, recvIo:IoOpt, sendIo:IoOpt)
 {
     && recvIo.Some?
     && match recvIo.p.msg {
-        case Grant(e) => ClientPending_Granted(c, c', recvIo.p, sendIo)
-        case Reject(e) => ClientPending_Rejected(c, c', recvIo.p, sendIo)
+        case Grant(e) => ClientPending_RcvGrant(c, c', recvIo.p, sendIo)
+        case Reject(e) => ClientPending_RcvReject(c, c', recvIo.p, sendIo)
         case _ => ClientStutter(c, c', sendIo)
     }
 }
 
-predicate ClientPending_Granted(c:Client, c':Client, p:Packet, sendIo:IoOpt)
+predicate ClientPending_RcvGrant(c:Client, c':Client, p:Packet, sendIo:IoOpt)
     requires c.state == Pending
     requires p.msg.Grant?
 {
@@ -74,7 +76,7 @@ predicate ClientPending_Granted(c:Client, c':Client, p:Packet, sendIo:IoOpt)
         && sendIo == None
 }
 
-predicate ClientPending_Rejected(c:Client, c':Client, p:Packet, sendIo:IoOpt)
+predicate ClientPending_RcvReject(c:Client, c':Client, p:Packet, sendIo:IoOpt)
     requires c.state == Pending
     requires p.msg.Reject?
 {

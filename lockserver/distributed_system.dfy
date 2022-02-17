@@ -33,7 +33,7 @@ datatype Constants = Constants(client_ids:seq<Id>, server_ids:seq<Id>) {
     }
 
     predicate ValidClientId(id:Id) {
-        id.agt == S && ValidClientIdx(id.idx)
+        id.agt == C && ValidClientIdx(id.idx)
     }
 
     predicate ValidTypes() {
