@@ -3,8 +3,10 @@ include "types.dfy"
 module Network {
 import opened Types
 
+datatype IoOpt = None | Some(p:Packet)
+
 datatype EnvStep = 
-    IoStep(actor:Id, recvIos:seq<Packet>, sendIos:seq<Packet>)
+    IoStep(actor:Id, recvIo:IoOpt, sendIo:IoOpt)
 
 datatype Environment = Env(
         sentPackets:set<Packet>,
@@ -18,18 +20,18 @@ predicate EnvironmentInit(e:Environment) {
 predicate ValidIoStep(iostep:EnvStep) 
     requires iostep.IoStep?
 {
-    && (forall r | r in iostep.recvIos :: r.dst == iostep.actor)
-    && (forall s | s in iostep.sendIos :: s.src == iostep.actor)
+    && (iostep.recvIo.Some? ==> iostep.recvIo.p.dst == iostep.actor)
+    && (iostep.sendIo.Some? ==> iostep.sendIo.p.src == iostep.actor)
 }
 
 
 predicate EnvironmentNext(e:Environment, e':Environment)
 {
     match e.nextStep {
-        case IoStep(actor, recvIos, sendIos) => 
+        case IoStep(actor, recvIo, sendIo) => 
             && ValidIoStep(e.nextStep)
-            && e'.sentPackets == e.sentPackets + (set s | s in sendIos)
-            && (forall r | r in recvIos :: r in e.sentPackets)
+            && e'.sentPackets == e.sentPackets + (if sendIo.Some? then {sendIo.p} else {})
+            && recvIo.Some? ==> recvIo.p in e.sentPackets
     }
 }
 
