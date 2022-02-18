@@ -39,8 +39,14 @@ predicate ProcessRequest(s:Server, s':Server, recvIo:IoOpt, sendIo:IoOpt)
     var e := recvIo.p.msg.e;
     if !s.resource.Free? then
         ProcessRequest_Reject(s, s', recvIo.p, sendIo)
-    else if && recvIo.p.src in s.epoch_map 
-            &&  e > s.epoch_map[recvIo.p.src] then
+    //Bug 2: conditional was like the following. This is a liveness bug, as s.epoch_map 
+    // starts of as empty.
+    // else if && recvIo.p.src in s.epoch_map 
+    //         &&  e > s.epoch_map[recvIo.p.src] then
+    else if 
+        recvIo.p.src !in s.epoch_map ||
+        (   && recvIo.p.src in s.epoch_map 
+            &&  e > s.epoch_map[recvIo.p.src] ) then
         ProcessRequest_Grant(s, s', recvIo.p, sendIo)
     else 
         ProcessRequest_Reject(s, s', recvIo.p, sendIo)
@@ -48,8 +54,6 @@ predicate ProcessRequest(s:Server, s':Server, recvIo:IoOpt, sendIo:IoOpt)
 
 predicate ProcessRequest_Grant(s:Server, s':Server, p:Packet, sendIo:IoOpt) 
     requires p.msg.Request?
-    requires p.src in s.epoch_map
-    requires p.msg.e > s.epoch_map[p.src]
 {
     && s'.epoch_map == s.epoch_map[p.src := p.msg.e]
     && s'.resource == Held(p.src)
