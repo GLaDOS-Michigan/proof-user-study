@@ -44,6 +44,7 @@ predicate Trivialities(cons:Constants, ds:DistrSys) {
     && cons.WF() 
     && ds.WF(cons)
     && ValidPackets(cons, ds)
+    && Granted_Implies_EpochSeen(cons, ds)
 }
 
 predicate ValidPackets(cons:Constants, ds:DistrSys) 
@@ -56,6 +57,17 @@ predicate ValidPackets(cons:Constants, ds:DistrSys)
         case Grant(_) => ServerToClientPkt(cons, p)
         case Reject(_) => ServerToClientPkt(cons, p)
     }
+}
+
+/* If a server s has granted to client c, then c in s.epoch_map, 
+   and s.epoch_map[c] >= grant_msg.epoch */
+predicate Granted_Implies_EpochSeen(cons:Constants, ds:DistrSys) 
+    requires cons.WF() && ds.WF(cons)
+    requires ValidPackets(cons, ds)
+{
+    forall p | p in ds.network.sentPackets && p.msg.Grant? :: 
+    && p.dst in ds.servers[p.src.idx].epoch_map
+    && ds.servers[p.src.idx].epoch_map[p.dst] >= p.msg.e
 }
 
 /* For each client c in Working(s) and epoch e, there exists a Grant(s, c, e) with no 
@@ -81,14 +93,39 @@ predicate NoMatchingRelease_Implies_ServerLocked(cons:Constants, ds:DistrSys)
     :: ds.servers[grant_p.src.idx].resource == Held(grant_p.dst)
 }
 
+/* Server locked implies Grant message in network */
+predicate ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys) 
+    requires cons.WF() && ds.WF(cons)
+    requires ValidPackets(cons, ds)
+    requires Granted_Implies_EpochSeen(cons, ds)
+{
+    forall sidx | 
+        && cons.ValidServerIdx(sidx) 
+        && ds.servers[sidx].resource.Held?
+    :: GetLatestGrant(ds.servers[sidx]) in ds.network.sentPackets
+}
 
 /* Server locked implies at most one non-matched Grant */
 predicate ServerLocked_Implies_AtMostOneNonMatchedGrant(cons:Constants, ds:DistrSys) 
     requires cons.WF() && ds.WF(cons)
-    requires ValidPackets(cons, ds)
 {
-    //TODO 
-    false
+    forall sidx | 
+        && cons.ValidServerIdx(sidx) 
+        && ds.servers[sidx].resource.Held?
+    :: ServerHasAtMostOneNonMatchedGrant(cons, ds, sidx)
+}
+
+/* A server that is locked can have at most one non-matched grant */
+predicate ServerHasAtMostOneNonMatchedGrant(cons:Constants, ds:DistrSys, sidx:int)
+    requires cons.WF() && ds.WF(cons)
+    requires cons.ValidServerIdx(sidx) 
+    requires ds.servers[sidx].resource.Held?
+    requires Granted_Implies_EpochSeen(cons, ds)
+{
+    var s := ds.servers[sidx];
+    var possibly_unpaired_grant := GetLatestGrant(s);
+    forall p | p in ds.network.sentPackets && p.msg.Grant? && p.src == s.id 
+    :: GetMatchingRelease(p) !in ds.network.sentPackets ==> p == possibly_unpaired_grant
 }
 
 /***************************************** Utils *****************************************/
@@ -127,5 +164,13 @@ function {:opaque} GetMatchingRelease(p:Packet) : (r:Packet)
     ensures r == Packet(p.dst, p.src, Release(p.msg.e))
 {
     Packet(p.dst, p.src, Release(p.msg.e))
+}
+
+/* Returns the latest Grant message of a locked server */
+function {:opaque} GetLatestGrant(s:Server) : (r:Packet)
+    requires s.resource.Held?
+    requires s.resource.client in s.epoch_map
+{
+    Packet(s.id, s.resource.client, Grant(s.epoch_map[s.resource.client]))
 }
 }
