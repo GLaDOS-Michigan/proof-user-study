@@ -49,6 +49,9 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
                     case Idle => {
                         assert |c.consts.servers| > 0;
                         var dst :| dst in c.consts.servers && sendIo==Some(Packet(c.consts.id, dst, Request(c'.epoch)));
+                        var out_p := Packet(c.consts.id, dst, Request(c'.epoch));
+                        assert sendIo == Some(out_p);
+                        assert p == out_p;
                         assert ClientToServerPkt(cons, p);
                     }
                     case Pending =>
