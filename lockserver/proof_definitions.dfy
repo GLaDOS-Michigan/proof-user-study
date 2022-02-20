@@ -100,6 +100,15 @@ predicate ClientWorking_Implies_NoMatchingRelease(cons:Constants, ds:DistrSys)
     && GetMatchingRelease(grant_p) !in ds.network.sentPackets
 }
 
+/* For all Request and Release messages, the message epoch are no greater than sender's epoch */
+predicate ClientPacketEpoch(cons:Constants, ds:DistrSys) 
+    requires cons.WF() && ds.WF(cons)
+    requires ValidPackets(cons, ds)
+{
+    forall p | IsRequestPacket(ds, p) || IsReleasePacket(ds, p) 
+    :: p.msg.e <= ds.clients[p.src.idx].epoch
+}
+
 /* For each client c, having a Release of c.epoch implies that client is in Idle state */
 predicate ClientRelease_Implies_Idle(cons:Constants, ds:DistrSys) 
     requires cons.WF() && ds.WF(cons)
@@ -179,6 +188,10 @@ predicate ClientToServerPkt(cons:Constants, p:Packet)
     requires cons.WF()
 {
     p.src in cons.client_ids && p.dst in cons.server_ids
+}
+
+predicate IsRequestPacket(ds:DistrSys, p:Packet) {
+    p.msg.Request? && p in ds.network.sentPackets
 }
 
 predicate IsGrantPacket(ds:DistrSys, p:Packet) {

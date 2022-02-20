@@ -32,6 +32,7 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
     assert NoMatchingRelease_Implies_ServerLocked(cons, ds');
     assert ServerLocked_Implies_Granted(cons, ds');
     assert ServerLocked_Implies_AtMostOneNonMatchedGrant(cons, ds');
+    assert Safety(cons, ds');
 }
 
 lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
