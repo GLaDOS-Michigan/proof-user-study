@@ -82,7 +82,8 @@ lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, 
 {
     var e, e' := ds.network, ds'.network;
     assert EnvironmentNext(e, e');
-    if  ds.network.nextStep.sendIo == None {
+    var actor, recvIo, sendIo := e.nextStep.actor, e.nextStep.recvIo, e.nextStep.sendIo;
+    if sendIo.None? {
         assert e'.sentPackets == e.sentPackets;
         assert false;
     }
