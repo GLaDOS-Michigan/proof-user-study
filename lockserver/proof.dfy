@@ -34,19 +34,7 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
     requires Trivialities(cons, ds)
     requires Next(cons, ds, ds')
     ensures Trivialities(cons, ds')
-{
-    assert ds'.WF(cons);
-
-    // First prove ValidPackets(cons, ds')
-    forall p | p in ds'.network.sentPackets
-    ensures PacketIsValid(cons, ds', p) 
-    {}
-    assert ValidPackets(cons, ds');
-
-    assume false;
-    assert ValidLockHoldersAndGranters(cons, ds');
-    assert Granted_Implies_ClientEpochSeen(cons, ds');
-}
+{}
 
 /***************************************** Utils *****************************************/
 lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, p:Packet) 
