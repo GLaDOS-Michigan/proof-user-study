@@ -83,6 +83,15 @@ predicate ClientWorking_Implies_NoMatchingRelease(cons:Constants, ds:DistrSys)
     && GetMatchingRelease(grant_p) !in ds.network.sentPackets
 }
 
+/* For each client c, having a Release of c.epoch implies that client is in Idle state */
+predicate ClientRelease_Implies_Idle(cons:Constants, ds:DistrSys) 
+    requires cons.WF() && ds.WF(cons)
+    requires ValidPackets(cons, ds)
+{
+    forall p | IsReleasePacket(ds, p) :: 
+    p.msg.e == ds.clients[p.src.idx].epoch ==> ds.clients[p.src.idx].state == Idle
+}
+
 /* For each valid Grant packet, no matching release implies server is locked */
 predicate NoMatchingRelease_Implies_ServerLocked(cons:Constants, ds:DistrSys) 
     requires cons.WF() && ds.WF(cons)
@@ -159,7 +168,9 @@ predicate IsGrantPacket(ds:DistrSys, p:Packet) {
     p.msg.Grant? && p in ds.network.sentPackets
 }
 
-
+predicate IsReleasePacket(ds:DistrSys, p:Packet) {
+    p.msg.Release? && p in ds.network.sentPackets
+}
 
 /* Returns the corresponding Release packet for a Grant */
 function {:opaque} GetMatchingRelease(p:Packet) : (r:Packet)
