@@ -38,11 +38,33 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
     assert ds'.WF(cons);
 
     // First prove ValidPackets(cons, ds')
+    forall p | p in ds'.network.sentPackets
+    ensures PacketIsValid(cons, ds', p) 
+    {
+        if p !in ds.network.sentPackets {
+            var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
+            if actor.agt == C {
+                var c, c' := ds.clients[actor.idx], ds'.clients[actor.idx];
+                match c.state {
+                    case Idle => {
+                        assert |c.consts.servers| > 0;
+                        var dst :| dst in c.consts.servers && sendIo==Some(Packet(c.consts.id, dst, Request(c'.epoch)));
+                        assert ClientToServerPkt(cons, p);
+                    }
+                    case Pending =>
+                        assume false;
+                    case Working(sid) =>
+                        assume false;
+                }
+            } else {
+                assume false;
+            }
+        }
+        assert PacketIsValid(cons, ds', p);
+    }
+    assert ValidPackets(cons, ds');
 
-
-
-
+    assume false;
+    assert Granted_Implies_ClientEpochSeen(cons, ds');
 }
-
-
 }
