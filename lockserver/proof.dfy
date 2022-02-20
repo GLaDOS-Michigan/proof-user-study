@@ -42,7 +42,6 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
 lemma Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
     requires Trivialities(cons, ds)
     requires Next(cons, ds, ds')
-    requires ServerLocked_Implies_Granted(cons, ds);
     ensures Trivialities(cons, ds')
 {}
 
@@ -50,6 +49,7 @@ lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':Dis
     requires cons.WF()
     requires ds.WF(cons) && ds'.WF(cons)
     requires Next(cons, ds, ds')
+    requires ServerLocked_Implies_Granted(cons, ds);
     ensures ServerLocked_Implies_Granted(cons, ds')
 {
     var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
