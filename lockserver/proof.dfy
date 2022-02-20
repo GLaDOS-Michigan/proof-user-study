@@ -82,11 +82,16 @@ lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, 
 {
     var e, e' := ds.network, ds'.network;
     assert EnvironmentNext(e, e');
-    match ds.network.nextStep.sendIo {
-        case None => 
-            assert e'.sentPackets == e.sentPackets;
-            assert false;
-        case Some(x) => assume false;
+    if  ds.network.nextStep.sendIo == None {
+        assert e'.sentPackets == e.sentPackets;
+        assert false;
     }
+    assume false;
+    // match ds.network.nextStep.sendIo {
+    //     case None => 
+    //         assert e'.sentPackets == e.sentPackets;
+    //         assert false;
+    //     case Some(x) => assume false;
+    // }
 }
 }
