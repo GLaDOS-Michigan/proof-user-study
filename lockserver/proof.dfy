@@ -42,6 +42,7 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
 lemma Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
     requires Trivialities(cons, ds)
     requires Next(cons, ds, ds')
+    requires ServerLocked_Implies_Granted(cons, ds);
     ensures Trivialities(cons, ds')
 {}
 
