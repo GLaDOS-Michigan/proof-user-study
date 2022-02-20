@@ -45,6 +45,7 @@ predicate Trivialities(cons:Constants, ds:DistrSys) {
     && cons.WF() 
     && ds.WF(cons)
     && ValidPackets(cons, ds)
+    && ValidLockHoldersAndGranters(cons, ds)
     && Granted_Implies_ClientEpochSeen(cons, ds)
 }
 
@@ -53,6 +54,15 @@ predicate ValidPackets(cons:Constants, ds:DistrSys)
 {
     forall p | p in ds.network.sentPackets ::
     PacketIsValid(cons, ds, p)
+}
+
+predicate ValidLockHoldersAndGranters(cons:Constants, ds:DistrSys) 
+    requires cons.WF() && ds.WF(cons)
+{
+    && (forall sidx | cons.ValidServerIdx(sidx) && ds.servers[sidx].resource.Held?
+        :: ds.servers[sidx].resource.client in cons.client_ids)
+    && (forall cidx | cons.ValidClientIdx(cidx) && ds.clients[cidx].state.Working?
+        :: ds.clients[cidx].state.sid in cons.server_ids)
 }
 
 predicate PacketIsValid(cons:Constants, ds:DistrSys, p:Packet) 

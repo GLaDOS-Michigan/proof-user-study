@@ -76,6 +76,7 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
     assert ValidPackets(cons, ds');
 
     assume false;
+    assert ValidLockHoldersAndGranters(cons, ds');
     assert Granted_Implies_ClientEpochSeen(cons, ds');
 }
 
