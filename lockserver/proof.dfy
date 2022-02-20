@@ -26,13 +26,7 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
     ensures Inv(cons, ds')
 {
     Inv_Next_Trivialities(cons, ds, ds');
-    assert ClientWorking_Implies_NoMatchingRelease(cons, ds');
-    assert ClientRelease_Implies_Idle(cons, ds');
-    assert NoMatchingRelease_Implies_ServerLocked(cons, ds');
     Inv_Next_ServerLocked_Implies_Granted(cons, ds, ds');
-    assert ServerLocked_Implies_Granted(cons, ds');
-    assert ServerLocked_Implies_AtMostOneNonMatchedGrant(cons, ds');
-    assert Safety(cons, ds');
 }
 
 lemma Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
