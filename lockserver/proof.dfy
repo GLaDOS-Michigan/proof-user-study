@@ -57,8 +57,15 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
                     }
                     case Pending =>
                         assert ClientPending(c, c', recvIo, sendIo);
+                        assert ds'.network.sentPackets == ds.network.sentPackets;
+                        assert false;
                     case Working(sid) =>
                         assert ClientRelease(c, c', recvIo, sendIo);
+                        var out_p := Packet(c.consts.id, c.state.sid, Release(c.epoch));
+                        assert p == out_p;
+                        assert c.state.sid.agt == S;
+                        assert c.state.sid in cons.server_ids;
+                        assert ClientToServerPkt(cons, p);
                 }
             } else {
                 assume false;
