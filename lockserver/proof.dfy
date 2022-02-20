@@ -68,7 +68,13 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
                         assert ClientToServerPkt(cons, p);
                 }
             } else {
-                assume false;
+                var s, s' := ds.servers[actor.idx], ds'.servers[actor.idx];
+                match recvIo.p.msg {
+                    case Request(e) => assert ProcessRequest(s, s', recvIo, sendIo);
+                    case Release(e) => assert ProcessRelease(s, s', recvIo, sendIo);
+                    case _ => assert ServerStutter(s, s', sendIo);
+                }
+                assert PacketIsValid(cons, ds', p);
             }
         }
         assert PacketIsValid(cons, ds', p);
