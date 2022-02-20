@@ -56,8 +56,15 @@ lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':Dis
     if actor.agt == C {
         assert ServerLocked_Implies_Granted(cons, ds');
     } else {
-        assume false;
-        assert ServerLocked_Implies_Granted(cons, ds');
+        forall sidx | cons.ValidServerIdx(sidx) && ds'.servers[sidx].resource.Held?
+        ensures && ds'.servers[sidx].resource.client in ds'.servers[sidx].epoch_map 
+                && GetLatestGrant(ds'.servers[sidx]) in ds'.network.sentPackets
+        {
+            if actor == Id(S, sidx) && !ds.servers[sidx].resource.Held? {
+                assume false;
+            }
+            
+        }
     }
 }
 
