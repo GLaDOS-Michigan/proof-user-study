@@ -26,20 +26,38 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
     ensures Inv(cons, ds')
 {
     // TODO
-    lemma_Inv_Next_Trivialities(cons, ds, ds');
+    Inv_Next_Trivialities(cons, ds, ds');
     assert ClientWorking_Implies_NoMatchingRelease(cons, ds');
     assert ClientRelease_Implies_Idle(cons, ds');
     assert NoMatchingRelease_Implies_ServerLocked(cons, ds');
+
+    Inv_Next_ServerLocked_Implies_Granted(cons, ds, ds');
     assert ServerLocked_Implies_Granted(cons, ds');
+
+    assume false;
     assert ServerLocked_Implies_AtMostOneNonMatchedGrant(cons, ds');
     assert Safety(cons, ds');
 }
 
-lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
+lemma Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
     requires Trivialities(cons, ds)
     requires Next(cons, ds, ds')
     ensures Trivialities(cons, ds')
 {}
+
+lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':DistrSys) 
+    requires cons.WF()
+    requires ds.WF(cons) && ds'.WF(cons)
+    requires Next(cons, ds, ds')
+    ensures ServerLocked_Implies_Granted(cons, ds')
+{
+    var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
+    if actor.agt == C {
+        assert ServerLocked_Implies_Granted(cons, ds');
+    } else {
+        assert ServerLocked_Implies_Granted(cons, ds');
+    }
+}
 
 /***************************************** Utils *****************************************/
 lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, p:Packet) 
