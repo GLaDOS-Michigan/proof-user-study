@@ -79,13 +79,5 @@ lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, 
     requires Next(cons, ds, ds')
     requires p !in ds.network.sentPackets && p in ds'.network.sentPackets
     ensures ds.network.nextStep.sendIo == Some(p)
-{
-    var e, e' := ds.network, ds'.network;
-    assert EnvironmentNext(e, e');
-    var actor, recvIo, sendIo := e.nextStep.actor, e.nextStep.recvIo, e.nextStep.sendIo;
-    if sendIo.None? {
-        assert e'.sentPackets == e.sentPackets;
-        assert false;
-    }
-}
+{}
 }
