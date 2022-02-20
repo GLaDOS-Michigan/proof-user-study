@@ -27,7 +27,11 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
 {
     // TODO
     lemma_Inv_Next_Trivialities(cons, ds, ds');
-    assume false;
+    assert ClientWorking_Implies_NoMatchingRelease(cons, ds');
+    assert ClientRelease_Implies_Idle(cons, ds');
+    assert NoMatchingRelease_Implies_ServerLocked(cons, ds');
+    assert ServerLocked_Implies_Granted(cons, ds');
+    assert ServerLocked_Implies_AtMostOneNonMatchedGrant(cons, ds');
 }
 
 lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
