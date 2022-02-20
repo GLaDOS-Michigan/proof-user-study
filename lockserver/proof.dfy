@@ -26,6 +26,17 @@ lemma Inv_Next(cons:Constants, ds:DistrSys, ds':DistrSys)
     ensures Inv(cons, ds')
 {
     // TODO
+    lemma_Inv_Next_Trivialities(cons, ds, ds);
     assume false;
 }
+
+lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys) 
+    requires Trivialities(cons, ds)
+    requires Next(cons, ds, ds')
+    ensures Trivialities(cons, ds')
+{
+
+}
+
+
 }
