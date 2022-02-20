@@ -40,45 +40,7 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
     // First prove ValidPackets(cons, ds')
     forall p | p in ds'.network.sentPackets
     ensures PacketIsValid(cons, ds', p) 
-    {
-        if p !in ds.network.sentPackets {
-            lemma_NewPacketsComeFromSendIo(cons, ds, ds', p);
-            var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
-            if actor.agt == C {
-                var c, c' := ds.clients[actor.idx], ds'.clients[actor.idx];
-                match c.state {
-                    case Idle => {
-                        assert |c.consts.servers| > 0;
-                        var dst :| dst in c.consts.servers && sendIo==Some(Packet(c.consts.id, dst, Request(c'.epoch)));
-                        var out_p := Packet(c.consts.id, dst, Request(c'.epoch));
-                        assert sendIo == Some(out_p);
-                        assert p == out_p;
-                        assert ClientToServerPkt(cons, p);
-                    }
-                    case Pending =>
-                        assert ClientPending(c, c', recvIo, sendIo);
-                        assert ds'.network.sentPackets == ds.network.sentPackets;
-                        assert false;
-                    case Working(sid) =>
-                        assert ClientRelease(c, c', recvIo, sendIo);
-                        var out_p := Packet(c.consts.id, c.state.sid, Release(c.epoch));
-                        assert p == out_p;
-                        assert c.state.sid.agt == S;
-                        assert c.state.sid in cons.server_ids;
-                        assert ClientToServerPkt(cons, p);
-                }
-            } else {
-                var s, s' := ds.servers[actor.idx], ds'.servers[actor.idx];
-                match recvIo.p.msg {
-                    case Request(e) => assert ProcessRequest(s, s', recvIo, sendIo);
-                    case Release(e) => assert ProcessRelease(s, s', recvIo, sendIo);
-                    case _ => assert ServerStutter(s, s', sendIo);
-                }
-                assert PacketIsValid(cons, ds', p);
-            }
-        }
-        assert PacketIsValid(cons, ds', p);
-    }
+    {}
     assert ValidPackets(cons, ds');
 
     assume false;
