@@ -42,6 +42,7 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
     ensures PacketIsValid(cons, ds', p) 
     {
         if p !in ds.network.sentPackets {
+            lemma_NewPacketsComeFromSendIo(cons, ds, ds', p);
             var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
             if actor.agt == C {
                 var c, c' := ds.clients[actor.idx], ds'.clients[actor.idx];
@@ -51,14 +52,13 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
                         var dst :| dst in c.consts.servers && sendIo==Some(Packet(c.consts.id, dst, Request(c'.epoch)));
                         var out_p := Packet(c.consts.id, dst, Request(c'.epoch));
                         assert sendIo == Some(out_p);
-                        lemma_NewPacketsComeFromSendIo(cons, ds, ds', p);
                         assert p == out_p;
                         assert ClientToServerPkt(cons, p);
                     }
                     case Pending =>
-                        assume false;
+                        assert ClientPending(c, c', recvIo, sendIo);
                     case Working(sid) =>
-                        assume false;
+                        assert ClientRelease(c, c', recvIo, sendIo);
                 }
             } else {
                 assume false;
