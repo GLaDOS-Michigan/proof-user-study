@@ -51,31 +51,7 @@ lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':Dis
     requires Next(cons, ds, ds')
     requires ServerLocked_Implies_Granted(cons, ds);
     ensures ServerLocked_Implies_Granted(cons, ds')
-{
-    var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
-    if actor.agt == C {
-        assert ServerLocked_Implies_Granted(cons, ds');
-    } else {
-        forall sidx | cons.ValidServerIdx(sidx) && ds'.servers[sidx].resource.Held?
-        ensures && ds'.servers[sidx].resource.client in ds'.servers[sidx].epoch_map 
-                && GetLatestGrant(ds'.servers[sidx]) in ds'.network.sentPackets
-        {
-            if actor == Id(S, sidx) && !ds.servers[sidx].resource.Held? && recvIo.p.msg.Request? {
-                var s, s' := ds.servers[sidx], ds'.servers[sidx];
-                assert ProcessRequest(s, s', recvIo, sendIo);
-                var e := recvIo.p.msg.e;
-                if  recvIo.p.src !in s.epoch_map
-                    ||( && recvIo.p.src in s.epoch_map 
-                        &&  e > s.epoch_map[recvIo.p.src] )
-                {
-                    assert ProcessRequest_Grant(s, s', recvIo.p, sendIo);
-                    assert s'.resource.client in s'.epoch_map;
-                    assert GetLatestGrant(s') in ds'.network.sentPackets;
-                }
-            }
-        }
-    }
-}
+{}
 
 /***************************************** Utils *****************************************/
 lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, p:Packet) 

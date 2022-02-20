@@ -215,6 +215,9 @@ function {:opaque} GetMatchingRelease(p:Packet) : (r:Packet)
 function {:opaque} GetLatestGrant(s:Server) : (r:Packet)
     requires s.resource.Held?
     requires s.resource.client in s.epoch_map
+    // Bug 4: The following ensures was ommitted while the fuction was opaque, and hence 
+    // I wasn't able to prove anything related to the result of this function, 
+    // e.g. Inv_Next_ServerLocked_Implies_Granted
     ensures r == Packet(s.id, s.resource.client, Grant(s.epoch_map[s.resource.client]))
 {
     Packet(s.id, s.resource.client, Grant(s.epoch_map[s.resource.client]))
