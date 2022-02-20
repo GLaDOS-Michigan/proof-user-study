@@ -52,6 +52,12 @@ predicate ValidPackets(cons:Constants, ds:DistrSys)
     requires cons.WF() && ds.WF(cons)
 {
     forall p | p in ds.network.sentPackets ::
+    PacketIsValid(cons, ds, p)
+}
+
+predicate PacketIsValid(cons:Constants, ds:DistrSys, p:Packet) 
+    requires cons.WF() && ds.WF(cons)
+{
     match p.msg {
         case Request(_) => ClientToServerPkt(cons, p)
         case Release(_) => ClientToServerPkt(cons, p)
