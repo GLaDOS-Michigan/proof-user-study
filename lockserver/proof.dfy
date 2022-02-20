@@ -69,7 +69,8 @@ lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':Dis
                         &&  e > s.epoch_map[recvIo.p.src] )
                 {
                     assert ProcessRequest_Grant(s, s', recvIo.p, sendIo);
-                    assume false;
+                    assert s'.resource.client in s'.epoch_map;
+                    assert GetLatestGrant(s') in ds'.network.sentPackets;
                 }
             }
         }

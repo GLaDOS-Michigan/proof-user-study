@@ -215,6 +215,7 @@ function {:opaque} GetMatchingRelease(p:Packet) : (r:Packet)
 function {:opaque} GetLatestGrant(s:Server) : (r:Packet)
     requires s.resource.Held?
     requires s.resource.client in s.epoch_map
+    ensures r == Packet(s.id, s.resource.client, Grant(s.epoch_map[s.resource.client]))
 {
     Packet(s.id, s.resource.client, Grant(s.epoch_map[s.resource.client]))
 }
