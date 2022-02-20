@@ -54,7 +54,7 @@ lemma Inv_Next_ServerLocked_Implies_Granted(cons:Constants, ds:DistrSys, ds':Dis
     var actor, recvIo, sendIo :| NextOneAgent(cons, ds, ds', actor, recvIo, sendIo);
     if actor.agt == C {
         assert ds'.servers == ds.servers;
-        assert ds'.network.sentPackets == ds.network.sentPackets;
+        assert ds'.network.sentPackets >= ds.network.sentPackets;
         assert ServerLocked_Implies_Granted(cons, ds');
     } else {
         assume false;
