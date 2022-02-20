@@ -29,17 +29,12 @@ predicate EnvironmentNext(e:Environment, e':Environment)
 {
     var actor, recvIo, sendIo := e.nextStep.actor, e.nextStep.recvIo, e.nextStep.sendIo;
     && ValidIoStep(e.nextStep)
-    && recvIo.Some? ==> recvIo.p in e.sentPackets
-    &&  if sendIo.None? then 
-            e'.sentPackets == e.sentPackets
-        else
-            e'.sentPackets == e.sentPackets + {sendIo.p}
-    // match e.nextStep {
-    //     case IoStep(actor, recvIo, sendIo) => 
-    //         && ValidIoStep(e.nextStep)
-    //         && e'.sentPackets == e.sentPackets + (if sendIo.Some? then {sendIo.p} else {})
-    //         && recvIo.Some? ==> recvIo.p in e.sentPackets
-    // }
+    // Bug 3: The line "recvIo.Some? ==> recvIo.p in e.sentPackets" wasn't parenthesised
+    // leading to a bad parsing 
+    && (recvIo.Some? ==> recvIo.p in e.sentPackets)
+    &&  match sendIo {
+        case Some(p) => e'.sentPackets == e.sentPackets + {p}
+        case None => e'.sentPackets == e.sentPackets
+    }
 }
-
 }
