@@ -51,6 +51,7 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
                         var dst :| dst in c.consts.servers && sendIo==Some(Packet(c.consts.id, dst, Request(c'.epoch)));
                         var out_p := Packet(c.consts.id, dst, Request(c'.epoch));
                         assert sendIo == Some(out_p);
+                        lemma_NewPacketsComeFromSendIo(cons, ds, ds', p);
                         assert p == out_p;
                         assert ClientToServerPkt(cons, p);
                     }
@@ -69,5 +70,23 @@ lemma lemma_Inv_Next_Trivialities(cons:Constants, ds:DistrSys, ds':DistrSys)
 
     assume false;
     assert Granted_Implies_ClientEpochSeen(cons, ds');
+}
+
+/***************************************** Utils *****************************************/
+lemma lemma_NewPacketsComeFromSendIo(cons:Constants, ds:DistrSys, ds':DistrSys, p:Packet) 
+    requires cons.WF()
+    requires ds.WF(cons) && ds'.WF(cons)
+    requires Next(cons, ds, ds')
+    requires p !in ds.network.sentPackets && p in ds'.network.sentPackets
+    ensures ds.network.nextStep.sendIo == Some(p)
+{
+    var e, e' := ds.network, ds'.network;
+    assert EnvironmentNext(e, e');
+    match ds.network.nextStep.sendIo {
+        case None => 
+            assert e'.sentPackets == e.sentPackets;
+            assert false;
+        case Some(x) => assume false;
+    }
 }
 }

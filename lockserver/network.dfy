@@ -27,12 +27,19 @@ predicate ValidIoStep(iostep:EnvStep)
 
 predicate EnvironmentNext(e:Environment, e':Environment)
 {
-    match e.nextStep {
-        case IoStep(actor, recvIo, sendIo) => 
-            && ValidIoStep(e.nextStep)
-            && e'.sentPackets == e.sentPackets + (if sendIo.Some? then {sendIo.p} else {})
-            && recvIo.Some? ==> recvIo.p in e.sentPackets
-    }
+    var actor, recvIo, sendIo := e.nextStep.actor, e.nextStep.recvIo, e.nextStep.sendIo;
+    && ValidIoStep(e.nextStep)
+    && recvIo.Some? ==> recvIo.p in e.sentPackets
+    &&  if sendIo.None? then 
+            e'.sentPackets == e.sentPackets
+        else
+            e'.sentPackets == e.sentPackets + {sendIo.p}
+    // match e.nextStep {
+    //     case IoStep(actor, recvIo, sendIo) => 
+    //         && ValidIoStep(e.nextStep)
+    //         && e'.sentPackets == e.sentPackets + (if sendIo.Some? then {sendIo.p} else {})
+    //         && recvIo.Some? ==> recvIo.p in e.sentPackets
+    // }
 }
 
 }
