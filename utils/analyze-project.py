@@ -126,23 +126,25 @@ def scale_by_timecard(timecard, timestamped_list):
     (start, end) = segment      # start and end of this segment
     cumulative_downtime = datetime.timedelta()     # the zero interval
     res = []
-    for i in range(len(timestamped_list)):
+    i = 0
+    while i < len(timestamped_list):
         item = timestamped_list[i]
         t = item[0].replace(tzinfo=None)
         if t < start:
-            continue
+            i += 1
         elif t <= end:
             scaled_time = (t-genesis) - cumulative_downtime
             res.append((scaled_time, item[1]))
             i += 1
         else:
-            if len(timecard) == 0:
-                break
             old_end = end
             s += 1
             new_segment = timecard[s]
             (start, end) = new_segment
-            cumulative_downtime += (new_segment[0]-old_end)
+            cumulative_downtime += (new_segment[0]-old_end)           
+    # print([c.name_rev[:6] for (t, c) in res])
+    # print(len(res))
+    # print()
     return res
 
 
@@ -245,8 +247,6 @@ def extract_diff_stats(meta, c):
             proof_del += stats[f]['deletions']
             proof_mod += stats[f]['lines']
     return (proto_inser, proto_del, proto_mod), (proof_inser, proof_del, proof_mod)
-
-
 
 def extract_info(meta, commits):
     protocol_sloc_lst, proof_sloc_lst = [], []
