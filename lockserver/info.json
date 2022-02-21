@@ -4,9 +4,14 @@
     "timecard_path" : "/home/nudzhang/Documents/proof-user-study/lockserver/timecard.csv",
     "protocol_files" : [
         "lockserver/types.dfy",
-        "lockserver/lockserver.dfy"
+        "lockserver/client.dfy",
+        "lockserver/server.dfy",
+        "lockserver/network.dfy.dfy",
+        "lockserver/distributed_system.dfy",
+        "lockserver/generic_definitions.dfy"
     ],
     "proof_files" : [
+        "lockserver/proof_definitions.dfy",
         "lockserver/proof.dfy"
     ]
 }
