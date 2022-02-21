@@ -187,10 +187,10 @@ def visualize_data(meta, scaled_commits):
         ax.grid()
               
         # Plot proof insertions and deletions
-        ax.bar(time_vals_minutes, proof_dels, 0.6, label='proof deletions', color='darkred')
-        ax.bar(time_vals_minutes, proof_inser, 0.6, bottom=proof_dels, label='proof insertions', color='limegreen')
-        ax.bar(time_vals_minutes, protocol_dels, 1, label='protocol deletions', color='orange')
-        ax.bar(time_vals_minutes, protocol_inser, 1, bottom=proof_dels, label='protocol insertions', color='turquoise')
+        ax.bar(time_vals_minutes, proof_dels, 1.8, label='proof deletions', color='darkred')
+        ax.bar(time_vals_minutes, proof_inser, 1.8, bottom=proof_dels, label='proof insertions', color='limegreen')
+        ax.bar(time_vals_minutes, protocol_dels, 3, label='protocol deletions', color='orange')
+        ax.bar(time_vals_minutes, protocol_inser, 3, bottom=proof_dels, label='protocol insertions', color='turquoise')
         
         # Plot sloc values
         ax.plot(time_vals_minutes, protocol_sloc_vals, label='protocol sloc', color='navy', linestyle='dashed', marker='o')
@@ -251,6 +251,7 @@ def extract_diff_stats(meta, c):
 def extract_info(meta, commits):
     protocol_sloc_lst, proof_sloc_lst = [], []
     protocol_stats_lst, proof_stats_lst = [], []
+
     for c in commits:
         protocol_lines, proof_lines = extract_sloc(meta, c)
         proto_diff, proof_diff = extract_diff_stats(meta, c)
@@ -258,16 +259,28 @@ def extract_info(meta, commits):
         proof_sloc_lst.append(proof_lines)
         protocol_stats_lst.append(proto_diff)
         proof_stats_lst.append(proof_diff)
-        
-        # Print some info
-        print("Commit %s:\t%s" %(c.name_rev[:6], c.committed_datetime))
-        print("protocol sloc:\t%d" %protocol_lines)
-        print("proof sloc:\t\t%d" %proof_lines)
-        print("proof diff:\t\t(%d, %d, %d)" %(proof_diff[0], proof_diff[1], proof_diff[2]))
-        print()
+    print_info_md(commits, protocol_sloc_lst, proof_sloc_lst, protocol_stats_lst, proof_stats_lst)
     return protocol_sloc_lst, proof_sloc_lst, protocol_stats_lst, proof_stats_lst   
 
-
+def print_info_md(commits, protocol_sloc_lst, proof_sloc_lst, protocol_stats_lst, proof_stats_lst):
+    """ Prints a summary of the data in markdown format
+    Assumes that all inputs have the same length"""
+    print("## Summary")
+    print("Final protocol sloc:\t\t%d" %protocol_sloc_lst[-1])
+    print("Final proof sloc:\t\t\t%d" %proof_sloc_lst[-1])
+    print("Total proof lines added:\t%d" %sum([diff[0] for diff in proof_stats_lst]))
+    print("Total proof lines deleted:\t%d" %sum([diff[1] for diff in proof_stats_lst]))
+    print()
+    
+    print("## Commit Info")
+    for i, c in enumerate(commits):
+        print("Commit %s:\t%s" %(c.name_rev[:6], c.committed_datetime))
+        print("protocol sloc:\t%d" %protocol_sloc_lst[i])
+        print("proof sloc:\t\t%d" %proof_sloc_lst[i])
+        print("proof diff:\t\t(%d, %d, %d)" %(proof_stats_lst[i][0], proof_stats_lst[i][1], proof_stats_lst[i][2]))
+        print()
+    return    
+    
 def count_sloc(program_str):
     """ Given the string representation of a program, return the SLOC """
     lines = program_str.split('\n')
